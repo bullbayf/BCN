@@ -1,30 +1,21 @@
-import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai@0.21.0/+esm";
+// Eliminamos la importación de Google AI ya que usaremos el API de DeepSeek directamente vía fetch
 
 const router = {
     screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map'],
     currentScreen: null,
     currentParams: null,
     chatHistory: [],
-    geminiApiKey: "AIzaSyAY8jql8d_ToKZuHXbTMjpU3SJKL5nmeDo", // REEMPLAZAR CON TU API KEY
-    geminiModel: null,
+    geminiApiKey: "sk-406de2a3fed947a380531d8be14e9edb", // API Key de DeepSeek
+    geminiModel: "deepseek-chat", // Modelo de DeepSeek
+    newsApiKey: "77eac375af91da1f97518cd4f99f8830", // GNews API Key
 
     async initGemini() {
-        console.log("Iniciando Gemini...");
-        if (this.geminiApiKey === "TU_API_KEY_AQUI" || !this.geminiApiKey) {
-            console.error("API Key no configurada correctamente");
+        console.log("Configurando DeepSeek...");
+        if (!this.geminiApiKey || this.geminiApiKey.startsWith("TU_")) {
+            console.error("API Key de DeepSeek no configurada");
             return;
         }
-        
-        try {
-            const genAI = new GoogleGenerativeAI(this.geminiApiKey);
-            this.geminiModel = genAI.getGenerativeModel({ 
-                model: "gemini-2.0-flash",
-                systemInstruction: "Eres un asistente de IA experto en turismo para la ciudad de Barcelona dentro de la app 'Stitch'. Tu objetivo es ayudar a los turistas a navegar por la ciudad, recomendar lugares emblemáticos, restaurantes locales, mercados (especialmente La Boqueria) y explicar cómo usar el transporte público (Metro L9 Sud, Autobuses TMB, Taxi). Eres amable, profesional y tus respuestas son concisas pero informativas y con un toque de hospitalidad catalana. Responde siempre en español."
-            });
-            console.log("Gemini inicializado correctamente con gemini-2.0-flash");
-        } catch (error) {
-            console.error("Error al inicializar Gemini:", error);
-        }
+        console.log("DeepSeek configurado correctamente");
     },
     places: {
         'sagrada-familia': {
@@ -163,6 +154,9 @@ const router = {
             this.navigate(screen, true, params);
         }
 
+        // Setup Audio
+        this.setupAudio();
+
         // Start Clock
         this.updateClock();
         setInterval(() => this.updateClock(), 1000);
@@ -170,6 +164,58 @@ const router = {
         // Start Weather
         this.updateWeather();
         setInterval(() => this.updateWeather(), 600000); // 10 minutes
+    },
+
+    setupAudio() {
+        const audio = document.getElementById('bg-music');
+        const toggleBtn = document.getElementById('audio-toggle-btn');
+        const toggleIcon = document.getElementById('audio-toggle-icon');
+
+        if (!audio || !toggleBtn || !toggleIcon) return;
+
+        // Mostrar el botón en todas las pantallas menos en 'onboarding'
+        if (this.currentScreen !== 'onboarding') {
+            toggleBtn.classList.remove('hidden');
+        }
+
+        // Volumen inicial bajito para no asustar
+        audio.volume = 0.3;
+
+        // Manejar el toggle
+        toggleBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play().then(() => {
+                    toggleIcon.textContent = 'volume_up';
+                }).catch(err => {
+                    console.error("Autoplay prevent during toggle:", err);
+                });
+            } else {
+                audio.pause();
+                toggleIcon.textContent = 'volume_off';
+            }
+        });
+        
+        // Intentar autoplay si ya hemos interactuado antes
+        // Muchos navegadores bloquean el autoplay, así que lo intentamos
+        // y si falla el usuario tiene que darle click al botón
+        const attemptPlay = () => {
+            audio.play().then(() => {
+                toggleIcon.textContent = 'volume_up';
+            }).catch(e => {
+                toggleIcon.textContent = 'volume_off';
+                console.log('Autoplay prevenido. El usuario debe activar el audio manualmente.');
+            });
+        };
+        
+        // Solo intentar arrancar auto si no estamos en onboarding, 
+        // o si el usuario completó el onboarding (una interacción)
+        if (this.currentScreen !== 'onboarding') {
+            attemptPlay();
+        }
+
+        // Exponer función de play globalmente si es necesario disparar
+        // desde otros botones (ej. al salir de onboarding)
+        this.attemptAudioPlay = attemptPlay;
     },
 
     // ... (updateWeather and getWeatherIcon remain unchanged)
@@ -252,6 +298,7 @@ const router = {
                 this.renderNearbyPlaces();
                 this.updateClock();
                 this.updateWeather();
+                this.fetchBarcelonaNews();
                 
                 // Set User Name
                 const userName = localStorage.getItem('userName');
@@ -260,7 +307,7 @@ const router = {
                     nameHeader.textContent = userName;
                 }
             }
-            
+
             if (['home', 'terminal', 'alojamiento'].includes(screen)) {
                 // Initialize Realistic Maps for Cards/Details
                 setTimeout(() => this.initCardMaps(), 500);
@@ -272,6 +319,9 @@ const router = {
 
             if (screen === 'onboarding') {
                 this.setupOnboarding();
+            } else {
+                const toggleBtn = document.getElementById('audio-toggle-btn');
+                if (toggleBtn) toggleBtn.classList.remove('hidden');
             }
 
             if (screen === 'ai-agent') {
@@ -318,6 +368,58 @@ const router = {
                 </div>
             </div>
         `).join('');
+    },
+
+    async fetchBarcelonaNews() {
+        const newsContainer = document.getElementById('news-container');
+        if (!newsContainer) return;
+
+        try {
+            const response = await fetch(`https://gnews.io/api/v4/search?q=barcelona&lang=es&country=es&max=5&apikey=${this.newsApiKey}`);
+            const data = await response.json();
+
+            if (data.articles && data.articles.length > 0) {
+                const seenTitles = new Set();
+                const uniqueArticles = data.articles.filter(article => {
+                    if (!article.title) return false;
+                    const normalized = article.title.toLowerCase().trim();
+                    if (seenTitles.has(normalized)) return false;
+                    seenTitles.add(normalized);
+                    return true;
+                });
+
+                if (uniqueArticles.length > 0) {
+                    let widthClass = 'w-[280px]';
+                    if (uniqueArticles.length === 1) widthClass = 'w-full';
+                    else if (uniqueArticles.length === 2) widthClass = 'w-[calc(50%-8px)]';
+
+                    newsContainer.innerHTML = uniqueArticles.map(article => {
+                        const fallbackImage = 'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=400&auto=format&fit=crop';
+                        const imageToUse = article.image || fallbackImage;
+
+                        return `
+                        <a href="${article.url}" target="_blank" class="flex-none ${widthClass} glass-card rounded-2xl overflow-hidden snap-center group border border-white/5 hover:border-primary/20 transition-all">
+                            <div class="h-32 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('${imageToUse}')"></div>
+                            <div class="p-3">
+                                <h4 class="text-xs font-bold text-white line-clamp-2 leading-tight">${article.title}</h4>
+                                <div class="flex items-center justify-between mt-2">
+                                    <span class="text-[9px] text-primary font-bold uppercase">${article.source.name}</span>
+                                    <span class="material-symbols-outlined text-primary text-xs">arrow_forward</span>
+                                </div>
+                            </div>
+                        </a>
+                        `;
+                    }).join('');
+                } else {
+                    newsContainer.innerHTML = '<p class="text-[10px] text-slate-500 px-2 italic">No hay noticias únicas disponibles en este momento.</p>';
+                }
+            } else {
+                newsContainer.innerHTML = '<p class="text-[10px] text-slate-500 px-2 italic">No hay noticias frescas en este momento.</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching news:', error);
+            newsContainer.innerHTML = '<p class="text-[10px] text-red-500/50 px-2 italic">Error al cargar noticias.</p>';
+        }
     },
 
     renderPlaceDetails(id) {
@@ -379,6 +481,9 @@ const router = {
         const saveAndGoHome = (name) => {
             if (name.trim()) {
                 localStorage.setItem('userName', name.trim());
+                if (typeof this.attemptAudioPlay === 'function') {
+                    this.attemptAudioPlay();
+                }
                 this.navigate('home');
             }
         };
@@ -501,22 +606,43 @@ const router = {
                     chatContainer.appendChild(typingIndicator);
                     
                     try {
-                        if (!this.geminiModel) {
-                            await this.initGemini();
-                        }
+                        const systemPrompt = "Eres un asistente de IA experto en turismo para la ciudad de Barcelona dentro de la app 'Stitch'. Tu objetivo es ayudar a los turistas a navegar por la ciudad, recomendar lugares emblemáticos, restaurantes locales, mercados (especialmente La Boqueria) y explicar cómo usar el transporte público (Metro L9 Sud, Autobuses TMB, Taxi). Eres amable, profesional y tus respuestas son concisas pero informativas y con un toque de hospitalidad catalana. Responde siempre en español.";
                         
-                        if (this.geminiModel) {
-                            const result = await this.geminiModel.generateContent(text);
-                            const response = await result.response;
-                            typingIndicator.remove();
-                            appendMessage(response.text(), false);
-                        } else {
-                            throw new Error("API Key no configurada");
+                        // Preparar mensajes para DeepSeek
+                        const messages = [
+                            { role: "system", content: systemPrompt },
+                            ...this.chatHistory.map(m => ({
+                                role: m.isUser ? "user" : "assistant",
+                                content: m.text
+                            }))
+                        ];
+
+                        const response = await fetch("https://api.deepseek.com/chat/completions", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${this.geminiApiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: this.geminiModel,
+                                messages: messages,
+                                stream: false
+                            })
+                        });
+
+                        const data = await response.json();
+                        
+                        if (data.error) {
+                            throw new Error(data.error.message || "Error en la API de DeepSeek");
                         }
-                    } catch (error) {
-                        console.error("Error en Gemini response:", error);
+
+                        const aiText = data.choices[0].message.content;
                         typingIndicator.remove();
-                        appendMessage("Error: " + error.message + ". Por favor, verifica tu conexión y la API Key.", false);
+                        appendMessage(aiText, false);
+                    } catch (error) {
+                        console.error("Error en DeepSeek response:", error);
+                        typingIndicator.remove();
+                        appendMessage("Error: " + error.message + ". Por favor, verifica tu conexión y la API Key de DeepSeek.", false);
                     }
                 };
 
@@ -587,6 +713,8 @@ const router = {
             scrollAmount = 288; 
         } else if (containerId === 'tour-categories-container') {
             scrollAmount = 120;
+        } else if (containerId === 'news-container') {
+            scrollAmount = 296;
         }
 
         container.scrollBy({
