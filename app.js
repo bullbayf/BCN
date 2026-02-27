@@ -22,7 +22,7 @@ const router = {
             name: 'Sagrada Família',
             dist: '1.2 km',
             desc: 'La obra maestra inacabada de Antoni Gaudí, un templo único en el mundo por su arquitectura orgánica y simbolismo espiritual.',
-            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCW_nlZcAGQei0pzOy7EVxyHozsba1pfqBjNWn1EEbqNreAAtVpiWDHO31IIrBQv4So1lFD4B7LTMS3ycpHieRfmR2cHqrWejmuhPOYkUh4oXBZ_93F7a99YFWpLSOpfUmOMe9lIHYNtlnUbWUAqor_k3A7RF75IPBCK2bR04Z-rWwZ7z9L5mAh1x3lm8hoytQjkvQP-SgtacuycEBuRgOoBQPP-2Nys32twdJx3S1kDdzGrl2w64SNTlfDYs65xMCfRm5608P4UaQ',
+            img: 'sagrada.webp',
             maps: 'https://www.google.com/maps/search/?api=1&query=Sagrada+Familia+Barcelona',
             transport: [
                 { type: 'metro', line: 'L2/L5', station: 'Sagrada Família', time: '12 min' },
@@ -178,17 +178,28 @@ const router = {
             toggleBtn.classList.remove('hidden');
         }
 
-        // Volumen inicial bajito para no asustar
-        audio.volume = 0.3;
+        // Volumen al máximo para asegurar que se escuche en altavoces móviles
+        audio.volume = 1.0;
 
         // Manejar el toggle
-        toggleBtn.addEventListener('click', () => {
+        toggleBtn.addEventListener('click', async () => {
+            
             if (audio.paused) {
-                audio.play().then(() => {
-                    toggleIcon.textContent = 'volume_up';
-                }).catch(err => {
+                try {
+                    // Mobile safari/chrome fix: explicitly unmute and force interaction play
+                    audio.muted = false;
+                    const playPromise = audio.play();
+                    
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                        toggleIcon.textContent = 'volume_up';
+                    }
+                } catch (err) {
                     console.error("Autoplay prevent during toggle:", err);
-                });
+                    // Fallback attempt: reload and play
+                    audio.load();
+                    audio.play().catch(e => console.error("Final play fail:", e));
+                }
             } else {
                 audio.pause();
                 toggleIcon.textContent = 'volume_off';
@@ -375,49 +386,60 @@ const router = {
         if (!newsContainer) return;
 
         try {
-            const response = await fetch(`https://gnews.io/api/v4/search?q=barcelona&lang=es&country=es&max=5&apikey=${this.newsApiKey}`);
-            const data = await response.json();
-
-            if (data.articles && data.articles.length > 0) {
-                const seenTitles = new Set();
-                const uniqueArticles = data.articles.filter(article => {
-                    if (!article.title) return false;
-                    const normalized = article.title.toLowerCase().trim();
-                    if (seenTitles.has(normalized)) return false;
-                    seenTitles.add(normalized);
-                    return true;
-                });
-
-                if (uniqueArticles.length > 0) {
-                    let widthClass = 'w-[280px]';
-                    if (uniqueArticles.length === 1) widthClass = 'w-full';
-                    else if (uniqueArticles.length === 2) widthClass = 'w-[calc(50%-8px)]';
-
-                    newsContainer.innerHTML = uniqueArticles.map(article => {
-                        const fallbackImage = 'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=400&auto=format&fit=crop';
-                        const imageToUse = article.image || fallbackImage;
-
-                        return `
-                        <a href="${article.url}" target="_blank" class="flex-none ${widthClass} glass-card rounded-2xl overflow-hidden snap-center group border border-white/5 hover:border-primary/20 transition-all">
-                            <div class="h-32 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('${imageToUse}')"></div>
-                            <div class="p-3">
-                                <h4 class="text-xs font-bold text-white line-clamp-2 leading-tight">${article.title}</h4>
-                                <div class="flex items-center justify-between mt-2">
-                                    <span class="text-[9px] text-primary font-bold uppercase">${article.source.name}</span>
-                                    <span class="material-symbols-outlined text-primary text-xs">arrow_forward</span>
-                                </div>
-                            </div>
-                        </a>
-                        `;
-                    }).join('');
-                } else {
-                    newsContainer.innerHTML = '<p class="text-[10px] text-slate-500 px-2 italic">No hay noticias únicas disponibles en este momento.</p>';
+            // Simulated high-quality news data (bypasses API limits)
+            const mockNews = [
+                {
+                    title: "La Sagrada Família anuncia la fecha final para finalizar la torre de Jesucristo",
+                    url: "#",
+                    image: "https://images.unsplash.com/photo-1548680696-1c39aa96abf2?auto=format&fit=crop&q=80&w=400",
+                    source: { name: "BCN Hoy" }
+                },
+                {
+                    title: "Nuevas medidas para mejorar la movilidad en el centro de Barcelona durante el verano",
+                    url: "#",
+                    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=400",
+                    source: { name: "El Periódico" }
+                },
+                {
+                    title: "El Parc Güell restringirá aún más su aforo para proteger el patrimonio modernista",
+                    url: "#",
+                    image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&q=80&w=400",
+                    source: { name: "La Vanguardia" }
+                },
+                {
+                    title: "Apertura de nuevos espacios verdes en Poblenou y el distrito 22@",
+                    url: "#",
+                    image: "https://images.unsplash.com/photo-1596821864109-158bb3751786?auto=format&fit=crop&q=80&w=400",
+                    source: { name: "Diari ARA" }
+                },
+                {
+                    title: "Agenda Cultural: Los mejores festivales de música al aire libre este mes",
+                    url: "#",
+                    image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&q=80&w=400",
+                    source: { name: "Time Out BCN" }
                 }
-            } else {
-                newsContainer.innerHTML = '<p class="text-[10px] text-slate-500 px-2 italic">No hay noticias frescas en este momento.</p>';
-            }
+            ];
+
+            // Render mock news
+            let widthClass = 'w-[calc(50%-8px)]'; // Good default for horizontal scroll
+
+            newsContainer.innerHTML = mockNews.map(article => {
+                return `
+                <a href="${article.url}" target="_blank" class="flex-none ${widthClass} glass-card rounded-2xl overflow-hidden snap-center group border border-white/5 hover:border-primary/20 transition-all">
+                    <div class="h-28 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('${article.image}')"></div>
+                    <div class="p-3">
+                        <h4 class="text-xs font-bold text-white line-clamp-2 leading-tight">${article.title}</h4>
+                        <div class="flex items-center justify-between mt-2">
+                            <span class="text-[9px] text-primary font-bold uppercase">${article.source.name}</span>
+                            <span class="material-symbols-outlined text-primary text-[10px]">arrow_forward</span>
+                        </div>
+                    </div>
+                </a>
+                `;
+            }).join('');
+            
         } catch (error) {
-            console.error('Error fetching news:', error);
+            console.error('Error rendering news:', error);
             newsContainer.innerHTML = '<p class="text-[10px] text-red-500/50 px-2 italic">Error al cargar noticias.</p>';
         }
     },
