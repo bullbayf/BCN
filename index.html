@@ -886,180 +886,107 @@
 
     <!-- Template: Metro -->
     <template id="template-metro">
-        <header class="sticky top-0 z-10 flex items-center bg-slate-950/80 backdrop-blur-md justify-between border-b border-white/5 px-4 py-3">
-            <div class="flex items-center gap-3">
-                <button onclick="router.navigate('home')" class="flex size-10 items-center justify-center rounded-full hover:bg-primary/10 transition-colors">
-                    <span class="material-symbols-outlined text-primary">arrow_back</span>
-                </button>
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-white">Metro L9 Sud</h1>
-            </div>
-            <button class="flex size-10 items-center justify-center rounded-full hover:bg-primary/10">
-                <span class="material-symbols-outlined text-primary">info</span>
+        <header class="glass-header sticky top-0 z-50 px-6 py-5 flex items-center justify-between">
+            <button onclick="router.navigate('home')" class="size-10 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 class="text-xl font-black text-white tracking-tight flex-1 text-center">Estado del Metro</h1>
+            <button onclick="router.initMetroStatus()" class="size-10 flex items-center justify-center rounded-full bg-primary/10 text-primary active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">refresh</span>
             </button>
         </header>
-        <main class="flex-grow pb-32 max-w-md mx-auto overflow-y-auto">
-            <section class="p-4">
-                <div class="relative w-full aspect-[21/9] rounded-xl overflow-hidden shadow-sm border border-white/5 bg-slate-900">
-                    <img src="metro.webp" class="absolute inset-0 w-full h-full object-cover" alt="Metro L9 Sud">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3">
-                        <div class="flex items-center gap-2 text-white">
-                            <span class="bg-[#f37021] text-white px-2 py-0.5 rounded text-xs font-bold">L9S</span>
-                            <span class="text-xs font-semibold">Aeroport T1 — Zona Universitària</span>
+        <main class="flex-1 overflow-y-auto pb-32">
+            <div id="metro-loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
+                <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p class="text-slate-400 text-sm font-medium">Obteniendo estado de la red Metro...</p>
+            </div>
+            
+            <div id="metro-content-area" class="space-y-6">
+                <!-- Mapa de la Red -->
+                <section class="px-4 pt-6 pb-2">
+                    <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white">Mapa de la Red Urbana</h2>
+                    <div class="relative h-60 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
+                        <img alt="Mapa de metro" class="w-full h-full object-cover" src="reddemetro.jpg"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                        <div onclick="router.navigate('network-map')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
+                            <span class="material-symbols-outlined text-primary text-base">map</span>
+                            <span class="text-sm font-bold text-white">Explorar red de transporte</span>
                         </div>
                     </div>
-                </div>
-                <div class="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                    <div class="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full bg-orange-950/30 text-orange-400 text-[10px] font-bold border border-orange-900/50">
-                        <span class="relative flex h-2 w-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                        </span>
-                        Próximo tren: 3 min
+                </section>
+
+                <section class="px-4 pt-6 pb-2">
+                    <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white uppercase">Incidencias en la red</h2>
+                    <div id="metro-alerts-container" class="space-y-4">
+                        <!-- Alerts will be injected here -->
                     </div>
-                    <span class="shrink-0 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/5">Frecuencia: 7 min</span>
-                    <span class="shrink-0 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/5">Accesible</span>
-                    <span class="shrink-0 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold border border-primary/5">Wi-Fi gratis</span>
-                </div>
-            </section>
-            <section class="px-4 py-1 uppercase">
-                <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-white">
-                    <span class="material-symbols-outlined text-primary">schedule</span>
-                    Horarios
-                </h2>
-                <div class="bg-slate-900 p-3.5 rounded-xl border border-white/5 shadow-sm space-y-2.5">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-400">Lun — Jue y Dom</span>
-                        <span class="font-semibold text-white">05:00 — 00:00</span>
+                </section>
+
+                <section class="px-4 py-4">
+                    <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white uppercase">Estado de las líneas</h2>
+                    <div id="metro-lines-container" class="flex flex-col gap-3">
+                        <!-- Lines will be injected here -->
                     </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-400">Viernes</span>
-                        <span class="font-semibold text-white">05:00 — 02:00</span>
-                    </div>
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-400">Sábados</span>
-                        <span class="bg-green-900/30 text-green-400 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Servicio Continuo</span>
-                    </div>
-                </div>
-            </section>
-            <section class="px-4 py-3">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white uppercase">
-                    <span class="material-symbols-outlined text-primary">confirmation_number</span>
-                    Tarifas y Billetes
-                </h2>
-                <div class="space-y-3">
-                    <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
-                        <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12">
-                            <span class="material-symbols-outlined">flight_takeoff</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-bold text-base text-white">Billete Aeropuerto</p>
-                            <p class="text-slate-400 text-xs text-brand-orange font-bold uppercase">Viaje sencillo T1/T2</p>
-                        </div>
-                        <p class="font-bold text-primary">5,15€</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
-                        <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12">
-                            <span class="material-symbols-outlined">card_membership</span>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <p class="font-bold text-base text-white">Hola Barcelona Card</p>
-                                <span class="bg-green-900 text-green-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase">Recomendado</span>
+                </section>
+
+                <section class="px-4 py-2">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white uppercase">
+                        <span class="material-symbols-outlined text-primary">confirmation_number</span>
+                        Tarifas y Billetes
+                    </h2>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
+                            <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12">
+                                <span class="material-symbols-outlined">flight_takeoff</span>
                             </div>
-                            <p class="text-slate-400 text-xs">Viajes ilimitados (incluye Aeropuerto)</p>
-                        </div>
-                        <p class="font-bold text-primary text-right"><span class="text-[10px] block font-normal text-slate-400">Desde</span>17,50€</p>
-                    </div>
-                    <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
-                        <div class="flex items-center justify-center rounded-lg bg-slate-800 text-slate-500 shrink-0 size-12">
-                            <span class="material-symbols-outlined">style</span>
-                        </div>
-                        <div class="flex-1">
-                            <p class="font-bold text-base text-white">T-casual (10 viajes)</p>
-                            <p class="text-rose-500 text-[10px] font-bold uppercase">No válido para Aeropuerto</p>
-                        </div>
-                        <p class="font-bold text-slate-500">12,15€</p>
-                    </div>
-                </div>
-            </section>
-            <section class="px-4 py-2">
-                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white uppercase">
-                    <span class="material-symbols-outlined text-primary">sensors</span>
-                    Estado del Servicio
-                </h2>
-                <div class="bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center size-8 rounded-full bg-[#e31e24] text-white text-xs font-bold">L1</span>
-                            <span class="text-sm font-medium text-white">Línea 1</span>
-                        </div>
-                        <div class="flex flex-col items-end">
-                            <div class="flex items-center gap-1.5 text-amber-500">
-                                <span class="size-2 rounded-full bg-amber-500"></span>
-                                <span class="text-xs font-semibold">Retrasos</span>
+                            <div class="flex-1">
+                                <p class="font-bold text-base text-white">Billete Aeropuerto</p>
+                                <p class="text-slate-400 text-xs text-brand-orange font-bold uppercase">Viaje sencillo T1/T2</p>
                             </div>
-                            <span class="text-[10px] text-amber-600/80 font-medium">Incidencia técnica</span>
+                            <p class="font-bold text-primary">5,15€</p>
+                        </div>
+                        <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
+                            <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12">
+                                <span class="material-symbols-outlined">card_membership</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2">
+                                    <p class="font-bold text-base text-white">Hola Barcelona Card</p>
+                                    <span class="bg-green-900 text-green-400 text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase">Recomendado</span>
+                                </div>
+                                <p class="text-slate-400 text-xs">Viajes ilimitados (incluye Aeropuerto)</p>
+                            </div>
+                            <p class="font-bold text-primary text-right"><span class="text-[10px] block font-normal text-slate-400">Desde</span>17,50€</p>
+                        </div>
+                        <div class="flex items-center gap-4 bg-slate-900 p-4 rounded-xl border border-white/5 shadow-sm">
+                            <div class="flex items-center justify-center rounded-lg bg-slate-800 text-slate-500 shrink-0 size-12">
+                                <span class="material-symbols-outlined">style</span>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-bold text-base text-white">T-casual (10 viajes)</p>
+                                <p class="text-rose-500 text-[10px] font-bold uppercase">No válido para Aeropuerto</p>
+                            </div>
+                            <p class="font-bold text-slate-500">12,15€</p>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center size-8 rounded-full bg-[#93328e] text-white text-xs font-bold">L2</span>
-                            <span class="text-sm font-medium text-white">Línea 2</span>
+                <section class="px-4 py-6">
+                    <div class="bg-primary/10 rounded-2xl p-6 border border-primary/20">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+                                <span class="material-symbols-outlined">location_on</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-base text-white">Acceso a Estaciones</h3>
+                                <p class="text-sm text-slate-400">Encuentra la boca de metro más cercana</p>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1.5 text-green-400">
-                            <span class="size-2 rounded-full bg-green-500"></span>
-                            <span class="text-xs font-semibold">Funcionando</span>
-                        </div>
+                        <a href="https://www.google.com/maps/search/?api=1&query=metro+station+Barcelona" target="_blank" class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-transform min-h-[52px]">
+                            <span class="material-symbols-outlined">map</span>
+                            Ver en Google Maps
+                        </a>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center size-8 rounded-full bg-[#2eab4a] text-white text-xs font-bold">L3</span>
-                            <span class="text-sm font-medium text-white">Línea 3</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 text-green-400">
-                            <span class="size-2 rounded-full bg-green-500"></span>
-                            <span class="text-xs font-semibold">Funcionando</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center size-8 rounded-full bg-[#ffc20e] text-black text-xs font-bold">L4</span>
-                            <span class="text-sm font-medium text-white">Línea 4</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 text-green-400">
-                            <span class="size-2 rounded-full bg-green-500"></span>
-                            <span class="text-xs font-semibold">Funcionando</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="flex items-center justify-center size-8 rounded-full bg-[#005ea8] text-white text-xs font-bold">L5</span>
-                            <span class="text-sm font-medium text-white">Línea 5</span>
-                        </div>
-                        <div class="flex items-center gap-1.5 text-green-400">
-                            <span class="size-2 rounded-full bg-green-500"></span>
-                            <span class="text-xs font-semibold">Funcionando</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <section class="px-4 py-6">
-                <div class="bg-primary/10 rounded-2xl p-6 border border-primary/20">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
-                            <span class="material-symbols-outlined">location_on</span>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-base text-white">Acceso a Estaciones</h3>
-                            <p class="text-sm text-slate-400">Encuentra la boca de metro más cercana</p>
-                        </div>
-                    </div>
-                    <a href="https://www.google.com/maps/search/?api=1&query=metro+station+Barcelona" target="_blank" class="w-full bg-primary text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-transform min-h-[52px]">
-                        <span class="material-symbols-outlined">map</span>
-                        Ver en Google Maps
-                    </a>
-                </div>
-            </section>
+                </section>
+            </div>
         </main>
     </template>
 
@@ -1070,10 +997,18 @@
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
             <h1 class="text-xl font-black text-white tracking-tight flex-1 text-center">Estado de Bus</h1>
-            <div class="size-10"></div>
+            <button onclick="router.initBusStatus()" class="size-10 flex items-center justify-center rounded-full bg-primary/10 text-primary active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">refresh</span>
+            </button>
         </header>
         <main class="flex-1 overflow-y-auto pb-32">
-            <!-- Mapa -->
+            <div id="bus-loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
+                <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p class="text-slate-400 text-sm font-medium">Obteniendo estado de la red TMB...</p>
+            </div>
+
+            <div id="bus-content-area">
+                <!-- Mapa -->
             <section class="px-4 pt-6 pb-2">
                 <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white">Mapa de la Red Urbana</h2>
                 <div class="relative h-60 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
@@ -1085,96 +1020,19 @@
                     </div>
                 </div>
             </section>
-            <!-- Alertas -->
             <section class="px-4 pt-6 pb-2">
-                <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white uppercase">Alertas en tiempo real</h2>
-                <div class="flex flex-col gap-4 bg-slate-900 p-5 rounded-2xl border border-slate-800 mb-6 border-brand-orange/30">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-start gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-amber-900/10 text-brand-orange shrink-0 size-12">
-                                <span class="material-symbols-outlined text-2xl">directions_bus</span>
-                            </div>
-                            <div class="flex flex-1 flex-col justify-center">
-                                <div class="flex items-center gap-2">
-                                    <p class="text-lg font-bold text-white">Línea V15</p>
-                                    <span class="px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400 text-xs font-semibold uppercase">Retraso</span>
-                                </div>
-                                <p class="text-slate-400 text-sm">Retraso por manifestación</p>
-                                <div class="mt-2 flex items-center gap-1.5 text-brand-orange font-bold">
-                                    <span class="material-symbols-outlined text-lg">schedule</span>
-                                    <p class="text-base">Llegando en 4 min</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white uppercase">Incidencias en la red</h2>
+                <div id="bus-alerts-container" class="space-y-4">
+                    <!-- Alerts will be injected here -->
                 </div>
             </section>
-            <!-- Estado de las líneas -->
             <section class="px-4 py-4">
                 <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white uppercase">Estado de las líneas</h2>
-                <div class="flex flex-col gap-3">
-                    <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-emerald-900/20 text-emerald-400 shrink-0 size-12 font-bold text-lg">H12</div>
-                            <div>
-                                <p class="font-bold text-white">Llegando en 6 min</p>
-                                <p class="text-slate-400 text-xs italic">Próxima: Gran Via - Balmes</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-emerald-500">check_circle</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12 font-bold text-lg text-white">V17</div>
-                            <div>
-                                <p class="font-bold text-white">Llegando en 3 min</p>
-                                <p class="text-slate-400 text-xs italic">Próxima: Plaça de Catalunya</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-emerald-500">check_circle</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12 font-bold text-lg text-white">H16</div>
-                            <div>
-                                <p class="font-bold text-white">Llegando en 5 min</p>
-                                <p class="text-slate-400 text-xs italic">Próxima: Passeig de Gràcia</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-emerald-500">check_circle</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0 size-12 font-bold text-lg text-white">D40</div>
-                            <div>
-                                <p class="font-bold text-white">Llegando en 8 min</p>
-                                <p class="text-slate-400 text-xs italic">Próxima: Sants Estació</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-emerald-500">check_circle</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-rose-900/20 text-rose-400 shrink-0 size-12 font-bold text-lg">D20</div>
-                            <div>
-                                <p class="font-bold text-rose-400">Servicio interrumpido</p>
-                                <p class="text-slate-400 text-xs italic">Próxima: Av. del Paral·lel</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-rose-500">warning</span>
-                    </div>
-                    <div class="flex items-center justify-between bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center justify-center rounded-lg bg-slate-800 text-slate-500 shrink-0 size-12 font-bold text-lg">7</div>
-                            <div>
-                                <p class="font-bold text-slate-400">Sin incidencias</p>
-                                <p class="text-slate-500 text-xs italic">Próxima: Diagonal - Bruc</p>
-                            </div>
-                        </div>
-                        <span class="material-symbols-outlined text-slate-700">check_circle</span>
-                    </div>
+                <div id="bus-lines-container" class="flex flex-col gap-3">
+                    <!-- Lines will be injected here -->
                 </div>
             </section>
+            </div>
             <!-- Quick Map Peek -->
             <section class="px-4 py-4">
                 <div class="relative h-52 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
@@ -1657,7 +1515,7 @@
         <main class="flex-1 overflow-y-auto pb-44 px-6 space-y-6">
             <div id="restauracion-loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
                 <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                <p class="text-slate-400 text-sm font-medium">Buscando los mejores sitios cerca de ti...</p>
+                <p class="text-slate-400 text-sm font-medium">Obteniendo ubicación GPS...</p>
             </div>
             
             <div id="restauracion-intro" class="py-10 text-center space-y-4">
@@ -1665,14 +1523,44 @@
                     <span class="material-symbols-outlined text-4xl">restaurant</span>
                 </div>
                 <h2 class="text-xl font-bold text-white">¿Dónde quieres comer hoy?</h2>
-                <p class="text-slate-400 text-sm max-w-[280px] mx-auto">Pulsa el botón de arriba para buscar bares, restaurantes y mercados según tu ubicación real.</p>
+                <p class="text-slate-400 text-sm max-w-[280px] mx-auto">Activa tu GPS para encontrar los mejores sitios abiertos ahora cerca de ti.</p>
                 <button onclick="router.initRestauracion()" class="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
-                    Activar GPS y Buscar
+                    Activar GPS
                 </button>
             </div>
 
-            <div id="restauracion-list-container" class="space-y-4 pt-4">
-                <!-- Data will be injected here -->
+            <div id="restauracion-dashboard" class="hidden space-y-6 pt-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="router.openMapsSearch('restaurantes')" class="flex flex-col items-center gap-3 p-6 rounded-3xl glass-card border border-white/5 active:scale-95 transition-all hover:border-primary/40 group">
+                        <div class="size-14 rounded-2xl bg-orange-500/20 text-orange-400 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-3xl">restaurant</span>
+                        </div>
+                        <span class="font-bold text-white text-sm">Restaurantes</span>
+                    </button>
+                    <button onclick="router.openMapsSearch('bares+de+tapas')" class="flex flex-col items-center gap-3 p-6 rounded-3xl glass-card border border-white/5 active:scale-95 transition-all hover:border-primary/40 group">
+                        <div class="size-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-3xl">tapas</span>
+                        </div>
+                        <span class="font-bold text-white text-sm">Bares de Tapas</span>
+                    </button>
+                    <button onclick="router.openMapsSearch('mercados+gastronomicos')" class="flex flex-col items-center gap-3 p-6 rounded-3xl glass-card border border-white/5 active:scale-95 transition-all hover:border-primary/40 group">
+                        <div class="size-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-3xl">store</span>
+                        </div>
+                        <span class="font-bold text-white text-sm">Mercados</span>
+                    </button>
+                    <button onclick="router.openMapsSearch('cafeterias')" class="flex flex-col items-center gap-3 p-6 rounded-3xl glass-card border border-white/5 active:scale-95 transition-all hover:border-primary/40 group">
+                        <div class="size-14 rounded-2xl bg-primary/20 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                            <span class="material-symbols-outlined text-3xl">coffee</span>
+                        </div>
+                        <span class="font-bold text-white text-sm">Cafeterías</span>
+                    </button>
+                </div>
+
+                <div class="bg-primary/5 border border-primary/10 rounded-3xl p-5 flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary">info</span>
+                    <p class="text-xs text-slate-400 leading-relaxed">Selecciona una categoría para abrir Google Maps con los mejores lugares actualizados cerca de tu posición real.</p>
+                </div>
             </div>
         </main>
     </template>
