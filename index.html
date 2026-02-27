@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -106,6 +109,47 @@
             box-shadow: 0 0 15px #007ab8;
             animation: scan-move 3s linear infinite;
             z-index: 10;
+        }
+
+        /* Leaflet Map Overrides */
+        .leaflet-container {
+            background: #0f1c23 !important;
+        }
+        .leaflet-bar {
+            border: none !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-bar a {
+            background-color: rgba(15, 28, 35, 0.8) !important;
+            color: #007ab8 !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+
+        .marker-pulse {
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007ab8;
+            cursor: pointer;
+            box-shadow: 0 0 0 rgba(0, 122, 184, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 122, 184, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(0, 122, 184, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 122, 184, 0);
+            }
         }
     </style>
 </head>
@@ -829,7 +873,7 @@
         <main class="flex-grow pb-32 max-w-md mx-auto overflow-y-auto">
             <section class="p-4">
                 <div class="relative w-full aspect-[21/9] rounded-xl overflow-hidden shadow-sm border border-white/5 bg-slate-900">
-                    <div class="absolute inset-0 bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBemNh0QhR--jyupXT6_xJ5HYXiD0nm1SAxm8rn3W6UeRA3_CL6T8hM2efZ5eiVeoLu0k4vng8ONKh3sm8gfYWTZJbhNb4o75eQ3E2kP0DGqw1X6YoK_Oi71BUlaByIACKXM7tfLeR0DYJHdTo3lg1o9tAnKgXMryyG5-NHsw323RRz_4jVBFy1CYb1j3-jMooBhryXBUUMSr027CN84YRf3IovCVf9iv7Zc5XVmVCOna7rWBYwQaXlqZh6blxZUGPp3W64K6fNXTc");'></div>
+                    <img src="metro.webp" class="absolute inset-0 w-full h-full object-cover" alt="Metro L9 Sud">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-3">
                         <div class="flex items-center gap-2 text-white">
                             <span class="bg-[#f37021] text-white px-2 py-0.5 rounded text-xs font-bold">L9S</span>
@@ -1008,7 +1052,7 @@
                 <div class="relative h-60 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
                     <img alt="Mapa estilizado" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh1H0p4HfsJYGfkuTSxd6tUKRtANGI82JSPd8n9QXWxZaQo_yO4heWmx2PI5niaVNZVQ0oTzxCcx2fSCklxDKWNljdqsrgv8f1J3Jqe43PWeCJH6QFxH_BWeDaKAGO0y8iKQcwFlyjhD1mfCVAXknEw8wBUv2kUGYSM-yA0l9njRWxm146D5Z5lDU0xjQH_WTjfGbrBkO1gvFZnwheQ6EP1rX7web6Y-UebooZBM_cIF6D6QFeXFc--rXBg0B1EuxuxudtizcFqhY"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    <div class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+                    <div onclick="router.navigate('network-map')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
                         <span class="material-symbols-outlined text-primary text-base">map</span>
                         <span class="text-sm font-bold text-white">Explorar red de transporte</span>
                     </div>
@@ -1246,13 +1290,7 @@
                 </div>
             </section>
             <div class="px-4 mb-6">
-                <div class="w-full aspect-video rounded-xl bg-slate-200 dark:bg-slate-800 overflow-hidden relative border border-primary/5">
-                    <img alt="Map of Barcelona port area" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMxZXSHwJ6xP10Gd57ZHz1BnQ3PGJ7Iaz_VmfMp2iRamqvYqqYAwWieJ37WGbddw52gDzl7bdoWfCpe_fpqEWkeFhu7q7QjPXKtB9g-g4f_QA0GNPwTbZvJD_eSFLvu4SKfbJhpsYYwLRQu96Z3GSYpdDGDDGizxiX-BKmnAEo7nXQkGXAaO9-92ZA0hBlcHr_QPLHWzLPsTl1nqeIuHG5eyvdtkEHYKySeidlbY1ym_6Vrtkzrdn5d2byev2s4HkxQ8UgDiztUIw"/>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-                    <div class="absolute bottom-3 right-3 bg-white/90 dark:bg-slate-900/90 p-2 rounded-lg shadow-sm border border-primary/10">
-                        <span class="material-symbols-outlined text-primary">map</span>
-                    </div>
-                </div>
+                <div id="map-terminal-details" class="w-full aspect-video rounded-xl bg-slate-900 overflow-hidden relative border border-primary/5 z-0"></div>
             </div>
             <section class="px-4 flex flex-col gap-4">
                 <h3 class="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-500 dark:text-slate-400 ml-1 mb-1">Opciones de transporte</h3>
@@ -1531,13 +1569,7 @@
                 </div>
             </section>
             <div class="px-4 mb-6">
-                <div class="w-full aspect-video rounded-xl bg-slate-800 overflow-hidden relative border border-primary/5">
-                    <img alt="Map toward accommodation" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMxZXSHwJ6xP10Gd57ZHz1BnQ3PGJ7Iaz_VmfMp2iRamqvYqqYAwWieJ37WGbddw52gDzl7bdoWfCpe_fpqEWkeFhu7q7QjPXKtB9g-g4f_QA0GNPwTbZvJD_eSFLvu4SKfbJhpsYYwLRQu96Z3GSYpdDGDDGizxiX-BKmnAEo7nXQkGXAaO9-92ZA0hBlcHr_QPLHWzLPsTl1nqeIuHG5eyvdtkEHYKySeidlbY1ym_6Vrtkzrdn5d2byev2s4HkxQ8UgDiztUIw"/>
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-                    <div class="absolute bottom-3 right-3 bg-slate-900/90 p-2 rounded-lg shadow-sm border border-primary/10">
-                        <span class="material-symbols-outlined text-primary">navigation</span>
-                    </div>
-                </div>
+                <div id="map-alojamiento-details" class="w-full aspect-video rounded-xl bg-slate-900 overflow-hidden relative border border-primary/5 z-0"></div>
             </div>
             <section class="px-4 flex flex-col gap-4">
                 <h3 class="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400 ml-1 mb-1">Mejores rutas desde el centro</h3>
@@ -1583,6 +1615,20 @@
                     <span>Ver en Google Maps</span>
                 </a>
             </section>
+        </main>
+    </template>
+    <template id="template-network-map">
+        <header class="glass-header sticky top-0 z-50 px-6 py-5 flex items-center justify-between">
+            <button onclick="router.navigate('bus')" class="size-10 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 class="text-xl font-black text-white tracking-tight flex-1 text-center">Mapa de la Red</h1>
+            <div class="size-10"></div>
+        </header>
+        <main class="flex-1 overflow-hidden bg-slate-950 flex items-center justify-center">
+            <div class="w-full h-full p-0 flex items-center justify-center">
+                <img id="zoomable-map" src="reddemetro.jpg" class="max-w-none w-full h-auto object-contain transition-transform duration-200" alt="Mapa de la Red">
+            </div>
         </main>
     </template>
 </body>
