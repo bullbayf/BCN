@@ -1,7 +1,7 @@
 // Eliminamos la importación de Google AI ya que usaremos el API de DeepSeek directamente vía fetch
 
 const router = {
-    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map'],
+    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map', 'restauracion'],
     currentScreen: null,
     currentParams: null,
     chatHistory: [],
@@ -404,10 +404,20 @@ const router = {
             }
             
             contentArea.classList.remove('loading');
+            
+            // Initialization for specific screens
+            if (screen === 'restauracion') {
+                // Si ya tenemos datos, no hace falta buscar de nuevo a menos que se pulse el botón
+                const container = document.getElementById('restauracion-list-container');
+                if (container && container.innerHTML.trim() === "") {
+                    // Esperar un poco para que la transición termine
+                    setTimeout(() => console.log("Screen restauracion ready"), 100);
+                }
+            }
+            
             window.scrollTo(0, 0);
         }, 100);
     },
-
     renderNearbyPlaces() {
         const container = document.getElementById('nearby-places-container');
         if (!container) return;
@@ -421,6 +431,123 @@ const router = {
                 </div>
             </div>
         `).join('');
+    },
+
+
+    async initRestauracion() {
+        const loading = document.getElementById('restauracion-loading');
+        const intro = document.getElementById('restauracion-intro');
+        const container = document.getElementById('restauracion-list-container');
+
+        if (loading) loading.classList.remove('hidden');
+        if (intro) intro.classList.add('hidden');
+        if (container) container.innerHTML = '';
+
+        try {
+            // 1. Obtener ubicación GPS
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            });
+
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            // 2. Buscar con Gemini
+            const apiKey = this.geminiApiKey || localStorage.getItem('stitch_gemini_key');
+            if (!apiKey) throw new Error("API Key no configurada");
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            const prompt = `Actúa como una extensión de Google Maps en Barcelona.
+            Mi ubicación actual es: Latitud ${lat}, Longitud ${lon}.
+            Busca y devuélveme los 6 mejores lugares para comer (restaurantes, bares de tapas o mercados gastronómicos) que estén a menos de 1km de mí.
+            Devuelve ÚNICAMENTE un JSON válido con este formato:
+            [
+              {
+                "name": "Nombre Real",
+                "type": "Restaurante/Bar/Mercado",
+                "rating": "4.5",
+                "desc": "Breve descripción de especialidad (max 60 caracteres)",
+                "lat": 0.0,
+                "lon": 0.0,
+                "address": "Dirección aproximada",
+                "cuisine": "Tapas / Mediterránea / etc"
+              }
+            ]
+            Importante: Solo lugares reales de Barcelona que existan en Google Maps. No incluyas markdown.`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            if (!response.ok) throw new Error("Error en la búsqueda");
+            const data = await response.json();
+            const rawText = data.candidates[0].content.parts[0].text;
+            const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            const places = JSON.parse(cleanJson);
+
+            // 3. Renderizar
+            this.renderRestauracionResults(places, lat, lon);
+
+        } catch (error) {
+            console.error("Restauracion Error:", error);
+            if (loading) loading.classList.add('hidden');
+            if (intro) intro.classList.remove('hidden');
+            alert("Error: " + (error.code === 1 ? "Debes permitir el acceso al GPS para buscar sitios cercanos." : "No se pudo obtener la información de Google Maps / Gemini. Verifica tu conexión."));
+        }
+    },
+
+    renderRestauracionResults(places, myLat, myLon) {
+        const loading = document.getElementById('restauracion-loading');
+        const container = document.getElementById('restauracion-list-container');
+        if (loading) loading.classList.add('hidden');
+        if (!container) return;
+
+        container.innerHTML = places.map(place => `
+            <div class="glass-header rounded-3xl p-5 border border-white/10 shadow-xl space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-primary/20 text-primary text-[9px] font-black px-2 py-0.5 rounded-full uppercase">${place.type}</span>
+                            <div class="flex items-center gap-1 text-amber-400">
+                                <span class="material-symbols-outlined text-[10px] fill-1">star</span>
+                                <span class="text-[10px] font-bold">${place.rating}</span>
+                            </div>
+                        </div>
+                        <h3 class="text-white text-lg font-black truncate">${place.name}</h3>
+                        <p class="text-slate-400 text-xs">${place.desc}</p>
+                        <p class="text-slate-500 text-[10px] italic flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[10px]">location_on</span>
+                            ${place.address}
+                        </p>
+                    </div>
+                    <div class="size-12 bg-white/5 rounded-2xl flex items-center justify-center shrink-0 border border-white/5">
+                        <span class="material-symbols-outlined text-primary">restaurant</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.name + ' Barcelona')}" target="_blank" 
+                       class="flex-1 h-11 glass-card rounded-xl text-white font-bold text-[11px] flex items-center justify-center gap-2 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">info</span>
+                        Ver info
+                    </a>
+                    <a href="https://www.google.com/maps/dir/?api=1&origin=${myLat},${myLon}&destination=${place.lat},${place.lon}&travelmode=transit" target="_blank"
+                       class="flex-1 h-11 bg-primary rounded-xl text-white font-bold text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-sm">directions</span>
+                        Cómo llegar
+                    </a>
+                </div>
+            </div>
+        `).join('') + '<div class="h-20"></div>';
     },
 
     async fetchBarcelonaNews() {

@@ -187,17 +187,21 @@
                 <span class="material-symbols-outlined">map</span>
                 <span class="text-[10px] font-bold uppercase tracking-tighter">Mapa</span>
             </button>
-            <button onclick="router.navigate('tours')" id="nav-tours" class="flex flex-col items-center gap-1 px-3 py-2 text-slate-500 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">confirmation_number</span>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Civitates</span>
+            <button onclick="router.navigate('restauracion')" id="nav-restauracion" class="flex flex-col items-center gap-1 px-2 py-2 text-slate-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Restaurantes</span>
             </button>
-            <button onclick="router.navigate('camera')" id="nav-camera" class="flex flex-col items-center gap-1 px-3 py-2 text-slate-500 hover:text-primary transition-colors">
+            <button onclick="router.navigate('tours')" id="nav-tours" class="flex flex-col items-center gap-1 px-2 py-2 text-slate-500 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">confirmation_number</span>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Civitates</span>
+            </button>
+            <button onclick="router.navigate('camera')" id="nav-camera" class="flex flex-col items-center gap-1 px-2 py-2 text-slate-500 hover:text-primary transition-colors">
                 <span class="material-symbols-outlined">photo_camera</span>
-                <span class="text-[10px] font-bold uppercase tracking-tighter">Cámara AR</span>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Cámara AR</span>
             </button>
             
             <!-- Audio Toggle in Nav (Moved to right, scaled down) -->
-            <button id="audio-toggle-btn" class="flex flex-col items-center gap-1 px-3 py-2 text-amber-500 hover:text-amber-400 transition-colors drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] scale-90 opacity-90 hover:opacity-100">
+            <button id="audio-toggle-btn" class="flex flex-col items-center gap-1 px-2 py-2 text-amber-500 hover:text-amber-400 transition-colors drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] scale-90 opacity-90 hover:opacity-100">
                 <span class="material-symbols-outlined fill-1 text-xl" id="audio-toggle-icon">volume_up</span>
                 <span class="text-[9px] font-bold uppercase tracking-tighter">Música</span>
             </button>
@@ -1638,6 +1642,38 @@
                     <span>Ver en Google Maps</span>
                 </a>
             </section>
+        </main>
+    </template>
+    <template id="template-restauracion">
+        <header class="glass-header sticky top-0 z-50 px-6 py-5 flex items-center justify-between">
+            <button onclick="router.navigate('home')" class="size-10 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <h1 class="text-xl font-black text-white tracking-tight flex-1 text-center">Restauración</h1>
+            <button onclick="router.initRestauracion()" class="size-10 flex items-center justify-center rounded-full bg-primary/10 text-primary active:scale-90 transition-transform">
+                <span class="material-symbols-outlined">my_location</span>
+            </button>
+        </header>
+        <main class="flex-1 overflow-y-auto pb-44 px-6 space-y-6">
+            <div id="restauracion-loading" class="hidden flex flex-col items-center justify-center py-20 gap-4">
+                <div class="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p class="text-slate-400 text-sm font-medium">Buscando los mejores sitios cerca de ti...</p>
+            </div>
+            
+            <div id="restauracion-intro" class="py-10 text-center space-y-4">
+                <div class="size-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto text-primary">
+                    <span class="material-symbols-outlined text-4xl">restaurant</span>
+                </div>
+                <h2 class="text-xl font-bold text-white">¿Dónde quieres comer hoy?</h2>
+                <p class="text-slate-400 text-sm max-w-[280px] mx-auto">Pulsa el botón de arriba para buscar bares, restaurantes y mercados según tu ubicación real.</p>
+                <button onclick="router.initRestauracion()" class="bg-primary text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                    Activar GPS y Buscar
+                </button>
+            </div>
+
+            <div id="restauracion-list-container" class="space-y-4 pt-4">
+                <!-- Data will be injected here -->
+            </div>
         </main>
     </template>
     <template id="template-network-map">
