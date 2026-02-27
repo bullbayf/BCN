@@ -1,5 +1,5 @@
 const router = {
-    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets'],
+    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map'],
     currentScreen: null,
     currentParams: null,
 
@@ -237,6 +237,11 @@ const router = {
                     nameHeader.textContent = userName;
                 }
             }
+            
+            if (['home', 'terminal', 'alojamiento'].includes(screen)) {
+                // Initialize Realistic Maps for Cards/Details
+                setTimeout(() => this.initCardMaps(), 500);
+            }
 
             if (screen === 'place-details' && params) {
                 this.renderPlaceDetails(params);
@@ -248,6 +253,20 @@ const router = {
 
             if (screen === 'ai-agent') {
                 this.setupAIAgent();
+            }
+            
+            if (screen === 'network-map') {
+                setTimeout(() => {
+                    const elem = document.getElementById('zoomable-map');
+                    if (elem) {
+                        const panzoom = Panzoom(elem, {
+                            maxScale: 5,
+                            minScale: 1,
+                            contain: 'outside'
+                        });
+                        elem.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+                    }
+                }, 200);
             }
 
             this.updateNav(screen);
@@ -600,6 +619,43 @@ const router = {
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
         }
+    },
+
+    initCardMaps() {
+        const locations = [
+            { id: 'map-alojamiento-details', coords: [41.3745, 2.1485], label: 'Alojamiento', interactive: true },
+            { id: 'map-terminal-details', coords: [41.3600, 2.1750], label: 'Cruceros', interactive: true }
+        ];
+
+        locations.forEach(loc => {
+            const container = document.getElementById(loc.id);
+            if (!container || container._leaflet_id) return;
+
+            const map = L.map(loc.id, {
+                center: loc.coords,
+                zoom: 15,
+                zoomControl: false,
+                attributionControl: false,
+                dragging: loc.interactive || false,
+                touchZoom: loc.interactive || false,
+                scrollWheelZoom: loc.interactive || false,
+                doubleClickZoom: loc.interactive || false,
+                boxZoom: loc.interactive || false
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                maxZoom: 20
+            }).addTo(map);
+
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div class="marker-pulse" style="background: #007ab8; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+
+            L.marker(loc.coords, { icon: customIcon }).addTo(map);
+        });
     }
 };
 
