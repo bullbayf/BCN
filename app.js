@@ -1,14 +1,37 @@
+import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai@0.21.0/+esm";
+
 const router = {
     screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map'],
     currentScreen: null,
     currentParams: null,
+    chatHistory: [],
+    geminiApiKey: "AIzaSyAY8jql8d_ToKZuHXbTMjpU3SJKL5nmeDo", // REEMPLAZAR CON TU API KEY
+    geminiModel: null,
 
+    async initGemini() {
+        console.log("Iniciando Gemini...");
+        if (this.geminiApiKey === "TU_API_KEY_AQUI" || !this.geminiApiKey) {
+            console.error("API Key no configurada correctamente");
+            return;
+        }
+        
+        try {
+            const genAI = new GoogleGenerativeAI(this.geminiApiKey);
+            this.geminiModel = genAI.getGenerativeModel({ 
+                model: "gemini-2.0-flash",
+                systemInstruction: "Eres un asistente de IA experto en turismo para la ciudad de Barcelona dentro de la app 'Stitch'. Tu objetivo es ayudar a los turistas a navegar por la ciudad, recomendar lugares emblemáticos, restaurantes locales, mercados (especialmente La Boqueria) y explicar cómo usar el transporte público (Metro L9 Sud, Autobuses TMB, Taxi). Eres amable, profesional y tus respuestas son concisas pero informativas y con un toque de hospitalidad catalana. Responde siempre en español."
+            });
+            console.log("Gemini inicializado correctamente con gemini-2.0-flash");
+        } catch (error) {
+            console.error("Error al inicializar Gemini:", error);
+        }
+    },
     places: {
         'sagrada-familia': {
             name: 'Sagrada Família',
             dist: '1.2 km',
             desc: 'La obra maestra inacabada de Antoni Gaudí, un templo único en el mundo por su arquitectura orgánica y simbolismo espiritual.',
-            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCW_nlZcAGQei0pzOy7EVxyHozsba1pfqBjNWn1EEbqNreEAtVpiWDHO31IIrBQv4So1lFD4B7LTMS3ycpHieRfmR2cHqrWejmuhPOYkUh4oXBZ_93F7a99YFWpLSOpfUmOMe9lIHYNtlnUbWUAqor_k3A7RF75IPBCK2bR04Z-rWwZ7z9L5mAh1x3lm8hoytQjkvQP-SgtacuycEBuRgOoBQPP-2Nys32twdJx3S1kDdzGrl2w64SNTlfDYs65xMCfRm5608P4UaQ',
+            img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCW_nlZcAGQei0pzOy7EVxyHozsba1pfqBjNWn1EEbqNreAAtVpiWDHO31IIrBQv4So1lFD4B7LTMS3ycpHieRfmR2cHqrWejmuhPOYkUh4oXBZ_93F7a99YFWpLSOpfUmOMe9lIHYNtlnUbWUAqor_k3A7RF75IPBCK2bR04Z-rWwZ7z9L5mAh1x3lm8hoytQjkvQP-SgtacuycEBuRgOoBQPP-2Nys32twdJx3S1kDdzGrl2w64SNTlfDYs65xMCfRm5608P4UaQ',
             maps: 'https://www.google.com/maps/search/?api=1&query=Sagrada+Familia+Barcelona',
             transport: [
                 { type: 'metro', line: 'L2/L5', station: 'Sagrada Família', time: '12 min' },
@@ -465,17 +488,39 @@ const router = {
                 appendMessage(text, true);
                 input.value = '';
                 
-                // Mock AI response
-                setTimeout(() => {
-                    const responses = [
-                        "Barcelona es increíble. ¿Te interesa más la arquitectura o la gastronomía?",
-                        "¡Buena pregunta! Si buscas miradores gratuitos, los Bunkers del Carmel son la mejor opción.",
-                        "Te recomiendo visitar el Mercat de la Boqueria temprano en la mañana para evitar las multitudes.",
-                        "Para moverte por la ciudad, la tarjeta Hola Barcelona es muy conveniente."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    appendMessage(randomResponse, false);
-                }, 1000);
+                // Real Gemini Response
+                const handleGeminiResponse = async () => {
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.id = 'typing-indicator';
+                    typingIndicator.className = "flex gap-3 max-w-[90%] animate-pulse";
+                    typingIndicator.innerHTML = `
+                        <div class="glass-card px-4 py-2 rounded-2xl rounded-tl-none border-l-2 border-l-primary bg-primary/5">
+                            <span class="text-xs text-slate-400">Escribiendo...</span>
+                        </div>
+                    `;
+                    chatContainer.appendChild(typingIndicator);
+                    
+                    try {
+                        if (!this.geminiModel) {
+                            await this.initGemini();
+                        }
+                        
+                        if (this.geminiModel) {
+                            const result = await this.geminiModel.generateContent(text);
+                            const response = await result.response;
+                            typingIndicator.remove();
+                            appendMessage(response.text(), false);
+                        } else {
+                            throw new Error("API Key no configurada");
+                        }
+                    } catch (error) {
+                        console.error("Error en Gemini response:", error);
+                        typingIndicator.remove();
+                        appendMessage("Error: " + error.message + ". Por favor, verifica tu conexión y la API Key.", false);
+                    }
+                };
+
+                handleGeminiResponse();
             }
         };
 
