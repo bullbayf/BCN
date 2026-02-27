@@ -391,7 +391,7 @@ const router = {
                 {
                     title: "La Sagrada Família anuncia la fecha final para finalizar la torre de Jesucristo",
                     url: "#",
-                    image: "https://images.unsplash.com/photo-1548680696-1c39aa96abf2?auto=format&fit=crop&q=80&w=400",
+                    image: "sagradatorre.webp",
                     source: { name: "BCN Hoy" }
                 },
                 {
