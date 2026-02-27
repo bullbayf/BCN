@@ -1,0 +1,14 @@
+{
+    "name": "stitch-bienvenida-y-transporte",
+    "version": "1.0.0",
+    "description": "Barcelona Travel App - Welcome and Transport Module",
+    "main": "index.html",
+    "scripts": {
+        "dev": "vite --host --port 8100",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0"
+    }
+}
