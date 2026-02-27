@@ -9,6 +9,15 @@ const router = {
     geminiModel: "gemini-2.5-flash", // Modelo de Gemini
     newsApiKey: "77eac375af91da1f97518cd4f99f8830", // GNews API Key
 
+    back() {
+        if (this.currentScreen === 'network-map') {
+            const targetScreen = this.currentParams === 'bus' ? 'bus' : 'metro';
+            this.navigate(targetScreen);
+        } else {
+            window.history.back();
+        }
+    },
+
     async initGemini() {
         console.log("Configurando Gemini...");
         
@@ -390,15 +399,44 @@ const router = {
             }
             
             if (screen === 'network-map') {
+                const mapType = params === 'bus' ? 'bus' : 'metro';
+                const mapTitle = mapType === 'bus' ? 'Red de Autobuses' : 'Red de Metro';
+                const mapImg = mapType === 'bus' ? 'mapbus.jpg' : 'reddemetro.jpg';
+                
+                // Update UI dynamically
+                const headerTitle = document.getElementById('network-map-title');
+                if (headerTitle) headerTitle.textContent = mapTitle;
+                
+                const mapElem = document.getElementById('zoomable-map');
+                if (mapElem) mapElem.src = mapImg;
+
                 setTimeout(() => {
                     const elem = document.getElementById('zoomable-map');
                     if (elem) {
                         const panzoom = Panzoom(elem, {
-                            maxScale: 5,
-                            minScale: 1,
+                            maxScale: 6,
+                            minScale: 0.1,
                             contain: 'outside'
                         });
+                        
+                        // Wheel zoom
                         elem.parentElement.addEventListener('wheel', panzoom.zoomWithWheel);
+
+                        // Initial fit
+                        setTimeout(() => {
+                            const initialZoom = mapType === 'bus' ? 1.0 : 1.5;
+                            panzoom.zoom(initialZoom, { animate: true });
+                            panzoom.pan(0, 0);
+                        }, 100);
+
+                        // Button controls
+                        document.getElementById('zoom-in')?.addEventListener('click', () => panzoom.zoomIn());
+                        document.getElementById('zoom-out')?.addEventListener('click', () => panzoom.zoomOut());
+                        document.getElementById('zoom-reset')?.addEventListener('click', () => {
+                            panzoom.reset({ animate: true });
+                            const resetZoom = mapType === 'bus' ? 1.0 : 1.5;
+                            setTimeout(() => panzoom.zoom(resetZoom, { animate: true }), 200);
+                        });
                     }
                 }, 200);
             }

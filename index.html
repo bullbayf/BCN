@@ -906,9 +906,9 @@
                 <section class="px-4 pt-6 pb-2">
                     <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white">Mapa de la Red Urbana</h2>
                     <div class="relative h-60 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
-                        <img alt="Mapa de metro" class="w-full h-full object-cover" src="reddemetro.jpg"/>
+                        <img alt="Mapa de metro" class="w-full h-full object-cover" src="mapmetro.jpg"/>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        <div onclick="router.navigate('network-map')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
+                        <div onclick="router.navigate('network-map', true, 'metro')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
                             <span class="material-symbols-outlined text-primary text-base">map</span>
                             <span class="text-sm font-bold text-white">Explorar red de transporte</span>
                         </div>
@@ -1012,9 +1012,9 @@
             <section class="px-4 pt-6 pb-2">
                 <h2 class="text-2xl font-extrabold leading-tight tracking-tight mb-5 text-white">Mapa de la Red Urbana</h2>
                 <div class="relative h-60 w-full rounded-2xl overflow-hidden bg-slate-800 border border-slate-800 shadow-md">
-                    <img alt="Mapa estilizado" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh1H0p4HfsJYGfkuTSxd6tUKRtANGI82JSPd8n9QXWxZaQo_yO4heWmx2PI5niaVNZVQ0oTzxCcx2fSCklxDKWNljdqsrgv8f1J3Jqe43PWeCJH6QFxH_BWeDaKAGO0y8iKQcwFlyjhD1mfCVAXknEw8wBUv2kUGYSM-yA0l9njRWxm146D5Z5lDU0xjQH_WTjfGbrBkO1gvFZnwheQ6EP1rX7web6Y-UebooZBM_cIF6D6QFeXFc--rXBg0B1EuxuxudtizcFqhY"/>
+                    <img alt="Mapa de bus" class="w-full h-full object-cover" src="mapbus.jpg"/>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    <div onclick="router.navigate('network-map')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
+                    <div onclick="router.navigate('network-map', true, 'bus')" class="absolute bottom-3 left-3 flex items-center gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm cursor-pointer hover:bg-slate-800 transition-colors active:scale-95 border border-white/10">
                         <span class="material-symbols-outlined text-primary text-base">map</span>
                         <span class="text-sm font-bold text-white">Explorar red de transporte</span>
                     </div>
@@ -1565,16 +1565,37 @@
         </main>
     </template>
     <template id="template-network-map">
-        <header class="glass-header sticky top-0 z-50 px-6 py-5 flex items-center justify-between">
-            <button onclick="router.navigate('bus')" class="size-10 flex items-center justify-center rounded-full bg-white/5 text-slate-300 active:scale-90 transition-transform">
+        <header class="glass-header absolute top-0 left-0 right-0 z-50 px-6 py-5 flex items-center justify-between">
+            <button onclick="router.back()" class="size-10 flex items-center justify-center rounded-full bg-slate-900/60 backdrop-blur-md text-slate-300 active:scale-90 transition-transform border border-white/10">
                 <span class="material-symbols-outlined">arrow_back</span>
             </button>
-            <h1 class="text-xl font-black text-white tracking-tight flex-1 text-center">Mapa de la Red</h1>
+            <h1 id="network-map-title" class="text-xl font-black text-white tracking-tight flex-1 text-center drop-shadow-lg">Explorar Red</h1>
             <div class="size-10"></div>
         </header>
-        <main class="flex-1 overflow-hidden bg-slate-950 flex items-center justify-center">
-            <div class="w-full h-full p-0 flex items-center justify-center">
-                <img id="zoomable-map" src="reddemetro.jpg" class="max-w-none w-full h-auto object-contain transition-transform duration-200" alt="Mapa de la Red">
+        <main class="h-screen w-screen overflow-hidden bg-slate-950 flex items-center justify-center relative">
+            <div id="map-container" class="w-full h-full flex items-center justify-center cursor-move">
+                <img id="zoomable-map" src="reddemetro.jpg" class="max-w-none w-full h-auto" alt="Mapa de la Red">
+            </div>
+
+            <!-- Floating Zoom Controls -->
+            <div class="absolute bottom-28 right-6 z-50 flex flex-col gap-3">
+                <button id="zoom-in" class="size-12 flex items-center justify-center rounded-xl bg-slate-900/90 backdrop-blur-xl text-white border border-white/10 shadow-2xl active:scale-90 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">add</span>
+                </button>
+                <button id="zoom-out" class="size-12 flex items-center justify-center rounded-xl bg-slate-900/90 backdrop-blur-xl text-white border border-white/10 shadow-2xl active:scale-90 transition-transform">
+                    <span class="material-symbols-outlined text-2xl">remove</span>
+                </button>
+                <button id="zoom-reset" class="size-12 flex items-center justify-center rounded-xl bg-primary text-white border border-primary shadow-2xl active:scale-90 transition-transform mt-2">
+                    <span class="material-symbols-outlined text-2xl">restart_alt</span>
+                </button>
+            </div>
+
+            <!-- Interaction Hint -->
+            <div class="absolute bottom-28 left-6 z-40 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 pointer-events-none animate-pulse">
+                <p class="text-[10px] font-bold text-slate-100 uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xs">pinch</span>
+                    Zoom disponible
+                </p>
             </div>
         </main>
     </template>
