@@ -1,6 +1,6 @@
 const https = require('https');
 
-const apiKey = "AIzaSyBQ_WB1zu7x2SicI3P27J_tw1toOD0asCg";
+const apiKey = "";
 
 const options = {
   hostname: 'generativelanguage.googleapis.com',
