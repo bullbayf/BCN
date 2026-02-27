@@ -1,7 +1,7 @@
 // Eliminamos la importación de Google AI ya que usaremos el API de DeepSeek directamente vía fetch
 
 const router = {
-    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map', 'restauracion'],
+    screens: ['home', 'ai-agent', 'map', 'tours', 'camera', 'metro', 'bus', 'taxi', 'terminal', 'hola-barcelona', 'tmb-machines', 'tourist-offices', 't-casual', 'alojamiento', 'place-details', 'all-markets', 'network-map', 'restauracion'],
     currentScreen: null,
     currentParams: null,
     chatHistory: [],
@@ -13,6 +13,8 @@ const router = {
         if (this.currentScreen === 'network-map') {
             const targetScreen = this.currentParams === 'bus' ? 'bus' : 'metro';
             this.navigate(targetScreen);
+        } else if (this.currentScreen === 'tmb-machines' || this.currentScreen === 'tourist-offices') {
+            this.navigate('hola-barcelona');
         } else {
             window.history.back();
         }
