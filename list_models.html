@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <pre id="output">Cargando modelos...</pre>
+    <script>
+        const apiKey = "AIzaSyAY8jql8d_ToKZuHXbTMjpU3SJKL5nmeDo";
+        fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`)
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(err => {
+                document.getElementById('output').textContent = "Error: " + err.message;
+            });
+    </script>
+</body>
+</html>
