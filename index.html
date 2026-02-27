@@ -854,15 +854,13 @@
         </div>
 
         <main class="relative flex-1 bg-slate-900 overflow-hidden">
-            <!-- Camera Preview (Mock) -->
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD_Nvq0WYryoXEk0EdTTDL-aHfl-lUkvEUreitsfysSffxFUbJEYKY9g19XbE5G2x9YutqjsVA8VULfL1HrjLzwzk9vvwZTZDcJ3da1yMgADNDNLgDaXnkLHAADjoCFgUHZOQhlnafNwknIZpASlpYrZ4DbMRXXCtmKuzCFa8C0FBTurk3V8j6vm6Vll1iFMUBf3YTFqVURcze4Z5Q654KgiuPPinZeIUJEQ-SKEBz46qGjPXdkCe1dVcF7EfzLg_cZP9lriDWQgz4');">
-                <div class="absolute inset-0 bg-blue-900/10 backdrop-grayscale-[0.5]"></div>
-            </div>
+            <!-- Real Camera Feed -->
+            <video id="camera-stream" class="absolute inset-0 w-full h-full object-cover" autoplay playsinline muted></video>
+            <canvas id="camera-canvas" class="hidden"></canvas>
 
-            <!-- Scanning Elements -->
-            <div class="absolute inset-0 flex items-center justify-center p-8 pointer-events-none">
+            <!-- Scanning Elements (Targeting Box) -->
+            <div id="camera-targeting-ui" class="absolute inset-0 flex items-center justify-center p-8 pointer-events-none transition-opacity duration-300">
                 <div class="relative w-full max-w-xs aspect-[3/4] border border-white/20 rounded-3xl overflow-hidden box-glow">
-                    <div class="scan-line"></div>
                     <!-- Frame Corners -->
                     <div class="absolute top-6 left-6 size-10 border-t-2 border-l-2 border-primary rounded-tl-lg"></div>
                     <div class="absolute top-6 right-6 size-10 border-t-2 border-r-2 border-primary rounded-tr-lg"></div>
@@ -877,31 +875,18 @@
                 </div>
             </div>
 
-            <!-- Result Bottom Sheet - Floating and Compact -->
-            <div class="absolute bottom-28 left-6 right-6 z-30 flex justify-center">
-                <div class="glass-header rounded-3xl p-4 border border-white/10 shadow-2xl animate-in slide-in-from-bottom-8 duration-700 max-w-sm w-full">
-                    <div class="flex items-start justify-between mb-3">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-primary/20 text-primary text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">98% Match</span>
-                            </div>
-                            <h2 class="text-white text-xl font-black tracking-tight leading-tight">Casa Batlló</h2>
-                            <p class="text-slate-400 text-[11px]">Antoni Gaudí • Modernismo</p>
-                        </div>
-                        <button class="size-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-primary active:scale-90 transition-transform">
-                            <span class="material-symbols-outlined text-xl">bookmark</span>
-                        </button>
+            <!-- Capture Button Overlay -->
+            <div id="camera-capture-btn-container" class="absolute bottom-28 inset-x-0 flex justify-center z-30">
+                <button onclick="router.captureAndAnalyze()" class="size-20 rounded-full bg-white/20 backdrop-blur-md border-4 border-white flex items-center justify-center p-1 active:scale-95 transition-transform shadow-[0_0_30px_rgba(0,122,184,0.5)]">
+                    <div class="size-full bg-white rounded-full flex items-center justify-center text-primary group-hover:bg-primary transition-colors">
+                        <span class="material-symbols-outlined text-3xl font-bold">photo_camera</span>
                     </div>
-                    <div class="flex gap-2">
-                        <button onclick="router.navigate('place-details', true, 'casa-batllo')" class="flex-1 h-11 bg-primary rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
-                            <span class="material-symbols-outlined text-sm">info</span>
-                            Historia
-                        </button>
-                        <button class="size-11 glass-card rounded-xl flex items-center justify-center text-slate-300 active:scale-95 transition-all">
-                            <span class="material-symbols-outlined text-sm">share</span>
-                        </button>
-                    </div>
-                </div>
+                </button>
+            </div>
+
+            <!-- Result Bottom Sheet (Hidden by default) -->
+            <div id="camera-result-sheet" class="absolute bottom-24 left-6 right-6 z-40 flex justify-center hidden opacity-0 transition-opacity duration-500">
+                <!-- Content injected dynamically via JS -->
             </div>
         </main>
     </template>

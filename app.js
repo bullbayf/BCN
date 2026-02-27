@@ -5,8 +5,8 @@ const router = {
     currentScreen: null,
     currentParams: null,
     chatHistory: [],
-    geminiApiKey: "sk-406de2a3fed947a380531d8be14e9edb", // API Key de DeepSeek
-    geminiModel: "deepseek-chat", // Modelo de DeepSeek
+    geminiApiKey: "AIzaSyBQ_WB1zu7x2SicI3P27J_tw1toOD0asCg", // API Key de Gemini
+    geminiModel: "gemini-1.5-flash", // Modelo de Gemini
     newsApiKey: "77eac375af91da1f97518cd4f99f8830", // GNews API Key
 
     async initGemini() {
@@ -339,6 +339,12 @@ const router = {
                 this.setupAIAgent();
             }
             
+            if (screen === 'camera') {
+                this.initCamera();
+            } else {
+                this.stopCamera(); // Stop camera if leaving the screen
+            }
+            
             if (screen === 'network-map') {
                 setTimeout(() => {
                     const elem = document.getElementById('zoomable-map');
@@ -627,38 +633,45 @@ const router = {
                     `;
                     chatContainer.appendChild(typingIndicator);
                     
-                    try {
+                        try {
                         const systemPrompt = "Eres un asistente de IA experto en turismo para la ciudad de Barcelona dentro de la app 'Stitch'. Tu objetivo es ayudar a los turistas a navegar por la ciudad, recomendar lugares emblemáticos, restaurantes locales, mercados (especialmente La Boqueria) y explicar cómo usar el transporte público (Metro L9 Sud, Autobuses TMB, Taxi). Eres amable, profesional y tus respuestas son concisas pero informativas y con un toque de hospitalidad catalana. Responde siempre en español.";
                         
-                        // Preparar mensajes para DeepSeek
-                        const messages = [
-                            { role: "system", content: systemPrompt },
-                            ...this.chatHistory.map(m => ({
-                                role: m.isUser ? "user" : "assistant",
-                                content: m.text
-                            }))
-                        ];
+                        // Preparar mensajes para Gemini
+                        // Importante: No podemos enviar history vacío si usamos el endpoint normal.
+                        // Y el systemInstruction debe estar estructurado correctamente.
+                        const contents = this.chatHistory.map(m => ({
+                            role: m.isUser ? "user" : "model",
+                            parts: [{ text: m.text }]
+                        }));
 
-                        const response = await fetch("https://api.deepseek.com/chat/completions", {
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.geminiModel}:generateContent?key=${this.geminiApiKey}`;
+                        
+                        const requestBody = {
+                            contents: contents,
+                            systemInstruction: {
+                                role: "user",
+                                parts: [{ text: systemPrompt }]
+                            },
+                            generationConfig: {
+                                temperature: 0.7
+                            }
+                        };
+
+                        const response = await fetch(url, {
                             method: "POST",
                             headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${this.geminiApiKey}`
+                                "Content-Type": "application/json"
                             },
-                            body: JSON.stringify({
-                                model: this.geminiModel,
-                                messages: messages,
-                                stream: false
-                            })
+                            body: JSON.stringify(requestBody)
                         });
 
                         const data = await response.json();
                         
                         if (data.error) {
-                            throw new Error(data.error.message || "Error en la API de DeepSeek");
+                            throw new Error(data.error.message || "Error en la API de Gemini");
                         }
 
-                        const aiText = data.choices[0].message.content;
+                        const aiText = data.candidates[0].content.parts[0].text;
                         typingIndicator.remove();
                         appendMessage(aiText, false);
                     } catch (error) {
@@ -743,6 +756,145 @@ const router = {
             left: direction === 'left' ? -scrollAmount : scrollAmount,
             behavior: 'smooth'
         });
+    },
+
+    initCamera() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('API de cámara no soportada en este navegador.');
+            return;
+        }
+
+        const video = document.getElementById('camera-stream');
+        if (!video) return;
+
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' } // Usa la cámara trasera si está disponible
+        })
+        .then(stream => {
+            this.currentCameraStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error('Error accediendo a la cámara:', err);
+            alert('No se pudo acceder a la cámara. Por favor, revisa los permisos.');
+        });
+    },
+
+    stopCamera() {
+        if (this.currentCameraStream) {
+            this.currentCameraStream.getTracks().forEach(track => track.stop());
+            this.currentCameraStream = null;
+        }
+    },
+
+    async captureAndAnalyze() {
+        const video = document.getElementById('camera-stream');
+        const canvas = document.getElementById('camera-canvas');
+        const targetingUI = document.getElementById('camera-targeting-ui');
+        const captureBtn = document.getElementById('camera-capture-btn-container');
+        const resultSheet = document.getElementById('camera-result-sheet');
+
+        if (!video || !canvas || !this.currentCameraStream) return;
+
+        // Visual feedback: Hide targeting UI, show loading state on button
+        targetingUI.classList.add('opacity-0');
+        const originalBtnHTML = captureBtn.innerHTML;
+        captureBtn.innerHTML = `
+            <div class="size-20 rounded-full bg-primary/80 backdrop-blur-md flex items-center justify-center p-1 shadow-[0_0_30px_rgba(0,122,184,0.8)]">
+                <span class="material-symbols-outlined text-white text-3xl font-bold animate-pulse">hourglass_empty</span>
+            </div>
+        `;
+
+        // Capture frame
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Get base64 string (remove data:image/jpeg;base64, prefix for Gemini API)
+        const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+        try {
+            // Gemini 1.5 Flash Vision API Call
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${this.geminiApiKey}`;
+            
+            const requestBody = {
+                systemInstruction: {
+                    role: "user",
+                    parts: [{ text: "Eres un guía turístico experto en Barcelona. Analiza esta imagen. Si es un monumento famoso de Barcelona, identifícalo y devuelve ÚNICAMENTE un JSON válido con este formato exacto: {\"found\": true, \"id\": \"id-del-lugar\", \"name\": \"Nombre del Lugar\", \"category\": \"Arquitectura/Historia/etc\", \"match\": \"98% Match\"}. Los IDs válidos que puedes usar son: 'sagrada-familia', 'park-guell', 'casa-batllo', 'mercat-boqueria'. Si NO es un monumento reconocido de Barcelona de esa lista, devuelve: {\"found\": false}. No incluyas markdown, solo el JSON raw." }]
+                },
+                contents: [{
+                    parts: [
+                        { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+                    ]
+                }],
+                generationConfig: { temperature: 0.1 }
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            const data = await response.json();
+            
+            const rawText = data.candidates[0].content.parts[0].text;
+            let resultData;
+            try {
+                // Limpiar posible formato markdown Markdown ```json ... ```
+                const cleanJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                resultData = JSON.parse(cleanJson);
+            } catch (e) {
+                console.error("Error parsing Gemini JSON:", rawText);
+                resultData = { found: false };
+            }
+
+            // Display Results
+            if (resultData && resultData.found) {
+                this.stopCamera(); // Freeze frame on recognition
+                
+                resultSheet.innerHTML = `
+                    <div class="glass-header rounded-3xl p-4 border border-white/10 shadow-2xl animate-in slide-in-from-bottom-8 duration-700 max-w-sm w-full">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="bg-primary/20 text-primary text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">${resultData.match || '95% Match'}</span>
+                                </div>
+                                <h2 class="text-white text-xl font-black tracking-tight leading-tight">${resultData.name}</h2>
+                                <p class="text-slate-400 text-[11px]">${resultData.category || 'Monumento Histórico'}</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="router.navigate('place-details', true, '${resultData.id}')" class="flex-1 h-11 bg-primary rounded-xl text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                                <span class="material-symbols-outlined text-sm">info</span>
+                                Ver Detalles Completos
+                            </button>
+                            <button onclick="router.navigate('camera')" class="size-11 glass-card rounded-xl flex items-center justify-center text-slate-300 active:scale-95 transition-all">
+                                <span class="material-symbols-outlined text-sm">refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                captureBtn.classList.add('hidden');
+                resultSheet.classList.remove('hidden');
+                // Small delay to trigger CSS transition
+                setTimeout(() => resultSheet.classList.remove('opacity-0'), 50);
+
+            } else {
+                // Not found
+                captureBtn.innerHTML = originalBtnHTML;
+                targetingUI.classList.remove('opacity-0');
+                alert("No se reconoció ningún monumento de Barcelona. Intenta apuntar mejor.");
+            }
+
+        } catch (error) {
+            console.error('Error during AI vision analysis:', error);
+            captureBtn.innerHTML = originalBtnHTML;
+            targetingUI.classList.remove('opacity-0');
+            alert("Error de conexión con la IA. Inténtalo de nuevo.");
+        }
     },
 
     filterTours(category, element) {
