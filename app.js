@@ -6,7 +6,7 @@ const router = {
     currentParams: null,
     chatHistory: [],
     geminiApiKey: "AIzaSyBQ_WB1zu7x2SicI3P27J_tw1toOD0asCg", // API Key de Gemini
-    geminiModel: "gemini-1.5-flash", // Modelo de Gemini
+    geminiModel: "gemini-1.5-flash-latest", // Modelo de Gemini
     newsApiKey: "77eac375af91da1f97518cd4f99f8830", // GNews API Key
 
     async initGemini() {
