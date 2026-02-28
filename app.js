@@ -586,33 +586,45 @@ const router = {
             const mockNews = [
                 {
                     title: "La Sagrada Família anuncia la fecha final para finalizar la torre de Jesucristo",
-                    url: "#",
+                    url: "https://sagradafamilia.org/es/noticias",
                     image: "sagradatorre.webp",
                     source: { name: "BCN Hoy" }
                 },
                 {
                     title: "Nuevas medidas para mejorar la movilidad en el centro de Barcelona durante el verano",
-                    url: "#",
+                    url: "https://www.elperiodico.com/es/barcelona",
                     image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&q=80&w=400",
                     source: { name: "El Periódico" }
                 },
                 {
                     title: "El Parc Güell restringirá aún más su aforo para proteger el patrimonio modernista",
-                    url: "#",
+                    url: "https://www.lavanguardia.com/local/barcelona",
                     image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&q=80&w=400",
                     source: { name: "La Vanguardia" }
                 },
                 {
                     title: "Apertura de nuevos espacios verdes en Poblenou y el distrito 22@",
-                    url: "#",
-                    image: "https://images.unsplash.com/photo-1596821864109-158bb3751786?auto=format&fit=crop&q=80&w=400",
+                    url: "https://es.ara.cat/",
+                    image: "Castell_de_Montjuic.jpg",
                     source: { name: "Diari ARA" }
                 },
                 {
                     title: "Agenda Cultural: Los mejores festivales de música al aire libre este mes",
-                    url: "#",
+                    url: "https://www.timeout.es/barcelona/es/musica",
                     image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&q=80&w=400",
                     source: { name: "Time Out BCN" }
+                },
+                {
+                    title: "El FC Barcelona Femenino hace historia en Europa una vez más",
+                    url: "https://www.sport.es/",
+                    image: "sport.jpg",
+                    source: { name: "SPORT" }
+                },
+                {
+                    title: "Las nuevas estrellas de La Masia que prometen revolucionar el equipo",
+                    url: "https://www.mundodeportivo.com/",
+                    image: "mundo.jpg",
+                    source: { name: "Mundo Deportivo" }
                 }
             ];
 
@@ -621,9 +633,9 @@ const router = {
 
             newsContainer.innerHTML = mockNews.map(article => {
                 return `
-                <a href="${article.url}" target="_blank" class="flex-none ${widthClass} glass-card rounded-2xl overflow-hidden snap-center group border border-white/5 hover:border-primary/20 transition-all">
-                    <div class="h-28 bg-cover bg-center group-hover:scale-105 transition-transform duration-500" style="background-image: url('${article.image}')"></div>
-                    <div class="p-3">
+                <a href="${article.url}" target="_blank" class="flex-none ${widthClass} glass-card rounded-2xl overflow-hidden snap-center group border border-white/5 hover:border-primary/20 transition-all flex flex-col">
+                    <div class="h-28 bg-contain bg-center bg-no-repeat bg-black/40 group-hover:scale-105 transition-transform duration-500" style="background-image: url('${article.image}')"></div>
+                    <div class="p-3 flex-1 flex flex-col justify-between">
                         <h4 class="text-xs font-bold text-white line-clamp-2 leading-tight">${article.title}</h4>
                         <div class="flex items-center justify-between mt-2">
                             <span class="text-[9px] text-primary font-bold uppercase">${article.source.name}</span>

@@ -495,11 +495,13 @@
         </header>
         <main class="flex-1 overflow-y-auto no-scrollbar pb-44">
             <!-- Map Section -->
-            <div class="relative h-[48vh] w-full bg-[#0a151b] overflow-hidden">
+            <div class="relative min-h-[50vh] flex-1 w-full bg-[#0a151b] overflow-hidden -mx-4 sm:mx-0 sm:w-auto">
                 <!-- Map Container -->
                 <div class="absolute inset-0 z-0">
-                    <img alt="Map" class="w-full h-full object-cover opacity-40 grayscale invert brightness-75 shadow-inner" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSZVOhUc6fA3WdNC1bjTa3q428av2RXzl0Oj30Hn-kUpjWazGbesE_ZxBFpPNavkw2BVy1IMeMVyhi6AuQ5LkDwdKamGpP035itdAo9jnew7SW69PhNSUJhmEcseYYm8jVdUW3i4gJJ26c1lmzuBrfeq-Bg6lm_Svg6ntNAo4OIUP6FPAt2vshejVCQNOzrcTupu1YRS6GXXQeruvAkuDQidOxLjnJssig__bDTg9XIVKHiQgTrQ9mAsDk6OJrDVoZAS6stna46Q0"/>
+                    <img alt="Map" class="w-full h-full object-cover opacity-80" src="mapabarcelona.png"/>
                     
+                    <!-- Decorative Gradient overlay for depth -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/80 via-transparent to-background-dark/95 pointer-events-none"></div>
                     <!-- Animated Markers -->
                     <!-- Boqueria -->
                     <div onclick="router.showMarketPopup('mercat-boqueria')" class="absolute top-[35%] left-[45%] group cursor-pointer z-10">
@@ -560,64 +562,64 @@
             </div>
 
             <!-- Bottom Information Panel (Now in flow) -->
-            <div class="relative z-20 px-6 -mt-16">
-                <div class="glass-header rounded-[2.5rem] p-6 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
-                    <div class="flex items-center justify-between mb-8">
+            <div class="relative z-20 px-4 pt-12">
+                <div class="glass-header rounded-[2.5rem] px-4 py-2.5 border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)]">
+                    <div class="flex items-center justify-between mb-2 mt-1">
                         <div>
-                            <h3 class="text-xl font-black text-white tracking-tight">Mercados Populares</h3>
-                            <button onclick="router.navigate('all-markets')" class="text-[10px] font-bold text-primary uppercase tracking-widest px-3 py-1 bg-primary/5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors mt-2">Ver Todos</button>
+                            <h3 class="text-lg font-black text-white tracking-tight">Mercados Populares</h3>
+                            <button onclick="router.navigate('all-markets')" class="text-[9px] font-bold text-primary uppercase tracking-widest px-2 py-1 bg-primary/5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors mt-0.5">Ver Todos</button>
                         </div>
-                        <div class="flex gap-1.5">
-                            <button onclick="router.scrollNearby('left', 'market-cards-container')" class="size-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-sm backdrop-blur-md active:scale-90 hover:bg-primary hover:text-white hover:border-primary transition-all">
-                                <span class="material-symbols-outlined text-sm font-bold">arrow_back_ios_new</span>
+                        <div class="flex gap-1.5 align-middle">
+                            <button onclick="router.scrollNearby('left', 'market-cards-container')" class="size-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-sm backdrop-blur-md active:scale-90 hover:bg-primary hover:text-white hover:border-primary transition-all">
+                                <span class="material-symbols-outlined text-xs font-bold">arrow_back_ios_new</span>
                             </button>
-                            <button onclick="router.scrollNearby('right', 'market-cards-container')" class="size-8 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-sm backdrop-blur-md active:scale-90 hover:bg-primary hover:text-white hover:border-primary transition-all">
-                                <span class="material-symbols-outlined text-sm font-bold">arrow_forward_ios</span>
+                            <button onclick="router.scrollNearby('right', 'market-cards-container')" class="size-7 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-sm backdrop-blur-md active:scale-90 hover:bg-primary hover:text-white hover:border-primary transition-all">
+                                <span class="material-symbols-outlined text-xs font-bold">arrow_forward_ios</span>
                             </button>
                         </div>
                     </div>
-                    <div id="market-cards-container" class="flex gap-4 overflow-x-auto no-scrollbar -mx-2 px-2 pb-2 snap-x snap-mandatory">
+                    <div id="market-cards-container" class="flex gap-3 overflow-x-auto no-scrollbar -mx-2 px-2 pb-1.5 pt-1 snap-x snap-mandatory">
                         <!-- Market Card 1 -->
-                        <div onclick="router.navigate('place-details', true, 'mercat-boqueria')" class="flex-none w-[17rem] glass-card p-4 rounded-3xl flex gap-5 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
-                            <div class="size-20 rounded-2xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('MercatdeBoqueria.jpg')"></div>
+                        <div onclick="router.navigate('place-details', true, 'mercat-boqueria')" class="flex-none w-[16rem] glass-card p-3 rounded-2xl flex gap-4 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
+                            <div class="size-16 rounded-xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('MercatdeBoqueria.jpg')"></div>
                             <div class="flex flex-col justify-center min-w-0">
-                                <h4 class="font-bold text-base text-white truncate">Mercat Boqueria</h4>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold">ABIERTO</span>
-                                    <p class="text-[10px] text-slate-500 font-medium">0.5km</p>
+                                <h4 class="font-bold text-sm text-white truncate">Mercat Boqueria</h4>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[9px] font-bold">ABIERTO</span>
+                                    <p class="text-[9px] text-slate-500 font-medium">0.5km</p>
                                 </div>
                             </div>
                         </div>
                         <!-- Market Card 2 -->
-                        <div onclick="router.navigate('place-details', true, 'marina-market')" class="flex-none w-[17rem] glass-card p-4 rounded-3xl flex gap-5 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
-                            <div class="size-20 rounded-2xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBiQmlcLXX8zITEHjGn3TOdFNYUqhVHvLIPJsX8CqMM7-L9Pi9mhQaGtaNKwiq10K2XVjZbGY46otn_h7Fh8aQLSRMux23gD8Ky1QUgGGGgBXsOKumwP8VHW8f1LgEALeOzqSGAxSvhLtF27RbDnyJWxhxWhBNHD7oqbYSg-gbWXy4cLR_d8IBluRam7RWhvUoRavF1Wd4SuJvc3qljBBP-uBREtIYvCKKAZIga0C9xVZEG1amP3VqneTtOy5hECyzJki8Gidp696Q')"></div>
+                        <div onclick="router.navigate('place-details', true, 'marina-market')" class="flex-none w-[16rem] glass-card p-3 rounded-2xl flex gap-4 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
+                            <div class="size-16 rounded-xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBiQmlcLXX8zITEHjGn3TOdFNYUqhVHvLIPJsX8CqMM7-L9Pi9mhQaGtaNKwiq10K2XVjZbGY46otn_h7Fh8aQLSRMux23gD8Ky1QUgGGGgBXsOKumwP8VHW8f1LgEALeOzqSGAxSvhLtF27RbDnyJWxhxWhBNHD7oqbYSg-gbWXy4cLR_d8IBluRam7RWhvUoRavF1Wd4SuJvc3qljBBP-uBREtIYvCKKAZIga0C9xVZEG1amP3VqneTtOy5hECyzJki8Gidp696Q')"></div>
                             <div class="flex flex-col justify-center min-w-0">
-                                <h4 class="font-bold text-base text-white truncate">Sta. Caterina</h4>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold">ABIERTO</span>
-                                    <p class="text-[10px] text-slate-500 font-medium">1.2km</p>
+                                <h4 class="font-bold text-sm text-white truncate">Sta. Caterina</h4>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[9px] font-bold">ABIERTO</span>
+                                    <p class="text-[9px] text-slate-500 font-medium">1.2km</p>
                                 </div>
                             </div>
                         </div>
                         <!-- Market Card 3 -->
-                        <div onclick="router.navigate('place-details', true, 'mercat-sant-antoni')" class="flex-none w-[17rem] glass-card p-4 rounded-3xl flex gap-5 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
-                            <div class="size-20 rounded-2xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&q=80&w=200')"></div>
+                        <div onclick="router.navigate('place-details', true, 'mercat-sant-antoni')" class="flex-none w-[16rem] glass-card p-3 rounded-2xl flex gap-4 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
+                            <div class="size-16 rounded-xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://images.unsplash.com/photo-1543362906-acfc16c67564?auto=format&fit=crop&q=80&w=200')"></div>
                             <div class="flex flex-col justify-center min-w-0">
-                                <h4 class="font-bold text-base text-white truncate">Sant Antoni</h4>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold">ABIERTO</span>
-                                    <p class="text-[10px] text-slate-500 font-medium">0.9km</p>
+                                <h4 class="font-bold text-sm text-white truncate">Sant Antoni</h4>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[9px] font-bold">ABIERTO</span>
+                                    <p class="text-[9px] text-slate-500 font-medium">0.9km</p>
                                 </div>
                             </div>
                         </div>
                         <!-- Market Card 4 -->
-                        <div onclick="router.navigate('place-details', true, 'mercat-les-corts')" class="flex-none w-[17rem] glass-card p-4 rounded-3xl flex gap-5 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
-                            <div class="size-20 rounded-2xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&q=80&w=200')"></div>
+                        <div onclick="router.navigate('place-details', true, 'mercat-les-corts')" class="flex-none w-[16rem] glass-card p-3 rounded-2xl flex gap-4 transition-all duration-500 active:scale-95 cursor-pointer border border-white/5 hover:border-primary/20 group snap-center">
+                            <div class="size-16 rounded-xl bg-cover bg-center shrink-0 shadow-inner group-hover:scale-105 transition-transform" style="background-image: url('https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&q=80&w=200')"></div>
                             <div class="flex flex-col justify-center min-w-0">
-                                <h4 class="font-bold text-base text-white truncate">Les Corts</h4>
-                                <div class="flex items-center gap-2 mt-2">
-                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[10px] font-bold">ABIERTO</span>
-                                    <p class="text-[10px] text-slate-500 font-medium">2.8km</p>
+                                <h4 class="font-bold text-sm text-white truncate">Les Corts</h4>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-green-500 text-[9px] font-bold">ABIERTO</span>
+                                    <p class="text-[9px] text-slate-500 font-medium">2.8km</p>
                                 </div>
                             </div>
                         </div>
